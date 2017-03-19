@@ -1,4 +1,4 @@
-# University of Notre Dame
+# <center>University of Notre Dame</center>
 #### Principles of Operating Systems
 #### Project 4
 #### Michael Burke and William Theisen
