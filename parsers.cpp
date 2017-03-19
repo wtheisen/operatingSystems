@@ -23,5 +23,36 @@ vector<string> getFileItems(string fileName)
 
 int main(int argc, char *argv[])
 {
-    vector<string> meow = getFileItems(argv[1]);
+    map<string, string> params;
+    params["PERIOD_FETCH"] = "180";
+    params["NUM_FETCH"] = "1";
+    params["NUM_PARSE"] = "1";
+    params["SEARCH_FILE"] = "Search.txt";
+    params["SITE_FILE"] = "Sites.txt";
+
+    if (argc > 1)
+    {
+        string fileName = (string)argv[1];
+
+        ifstream infile(fileName);
+        string temp;
+        while (infile >> temp)
+        {
+            string delimiter = "=";
+            size_t pos = 0;
+            pos = temp.find(delimiter);
+            string token = temp.substr(0, pos);
+            temp.erase(0, pos + delimiter.length());
+            if (params.find(token) != params.end())
+                params[token] = temp;
+            else
+            {
+                cout << "Invalid parameter: " << token;
+                cout << " with value: " << temp << endl;
+            }
+        }
+    }
+
+    for (auto it = params.begin(); it != params.end(); ++it)
+        cout << it->first << " = " << it->second << endl;
 }
