@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "setMem.h"
 #include <curl/curl.h>
  
 struct MemoryStruct {
@@ -28,11 +29,12 @@ WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
   return realsize;
 }
  
-char * getHTML(const char * url)
+//char * getHTML(const char * url)
+char* getHTML(char* url)
 {
   CURL *curl_handle;
   CURLcode res;
- 
+    printf("y %s", url); 
   struct MemoryStruct chunk;
  
   chunk.memory = malloc(1);  /* will be grown as needed by the realloc above */ 
@@ -44,8 +46,8 @@ char * getHTML(const char * url)
   curl_handle = curl_easy_init();
  
   /* specify URL to get */
- // char* url = "http://www.cnn.com/";
-  curl_easy_setopt(curl_handle, CURLOPT_URL, url);
+  char* url1 = "http://www.cnn.com";
+  curl_easy_setopt(curl_handle, CURLOPT_URL, url1);
  
   /* send all data to this function  */ 
   curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
@@ -82,10 +84,11 @@ char * getHTML(const char * url)
   /* cleanup curl stuff */ 
   curl_easy_cleanup(curl_handle);
  
-  free(chunk.memory);
+//  free(chunk.memory);
  
   /* we're done with libcurl, so clean it up */ 
   curl_global_cleanup();
  
   return result;
+ //   return 0;
 }

@@ -39,78 +39,11 @@ struct threadQueue {
 
 threadQueue producer, consumer; 
 
-
-    /*static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
-{
-    size_t realsize = size * nmemb;
-    struct MemoryStruct *mem = (struct MemoryStruct *)userp;
-
-    mem->memory = (char*)realloc(mem->memory, mem->size + realsize + 1);
-    if(mem->memory == NULL) {
-        printf("not enough memory (realloc returned NULL)\n");
-        return 0;
-    }
-
-    memcpy(&(mem->memory[mem->size]), contents, realsize);
-    mem->size += realsize;
-    mem->memory[mem->size] = 0;
-
-    return realsize;
-}
-
-
-
-char* getHTML(const char* url)
-{
-    CURL *curl_handle;
-    CURLcode res;
-
-    char* html;
-    struct MemoryStruct chunk;
-
-    chunk.memory = (char*)malloc(1);  
-    chunk.size = 0;    
-
-    curl_global_init(CURL_GLOBAL_ALL);
-
-    curl_handle = curl_easy_init();
-
-    curl_easy_setopt(curl_handle, CURLOPT_URL, "http://cnn.com/");
-
-    curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
-
-    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
-
-    curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
-
-    res = curl_easy_perform(curl_handle);
-
-    if(res != CURLE_OK) {
-        fprintf(stderr, "curl_easy_perform() failed: %s\n",
-                curl_easy_strerror(res));
-    }
-    else {
-        html = chunk.memory;
-        cout << "html saved " << html << endl;
-        cout << "chunk " << chunk.memory << endl;
-        //        printf("%lu bytes retrieved\n", (long)chunk.size);
-    }
-
-    curl_easy_cleanup(curl_handle);
-
-    free(chunk.memory);
-
-    curl_global_cleanup();
-
-    return html;
-}*/
-
 string getHTMLString(string url1) 
 {
-    //cout << url1 << endl;
-    const char* url = url1.c_str();
-    //cout << url << endl;
-    char* result = getHTML(url);
+    char * S = new char[url1.length() + 1];
+    strcpy(S,url1.c_str());
+    char* result = getHTML(S);
     return result;
 }
 
@@ -236,16 +169,12 @@ int main(int argc, char *argv[])
     consumer.threads = stoi(params["NUM_PARSE"]);
 
  //cout << site << endl;
-    cout << getHTMLString("http://cnn.com/");
-    /*signal(SIGALRM, createProducers);
+    //cout << getHTMLString("http://cnn.com/");
+    signal(SIGALRM, createProducers);
     alarm(stoi(params["PERIOD_FETCH"]));
     
     createProducers(1);
-    while(1);*/
+    while(1);
 }
-
-
-
-
 
 
