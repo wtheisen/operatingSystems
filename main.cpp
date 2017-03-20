@@ -19,11 +19,14 @@ extern "C" {
 
 using namespace std;
 
+struct Jobs {
+    int tasks;
+};
+
 struct MemoryStruct {
     char *memory;
     size_t size;
 };
-
 
 struct threadQueue {
 
@@ -31,6 +34,7 @@ struct threadQueue {
     vector<string> orig;
     int threads;
     pthread_mutex_t mutex;
+    pthread_cond_t fill;
     void repopulate() {
         tmp = orig;
     }
@@ -93,39 +97,41 @@ void* produce(void * param)
         producer.tmp.pop_back();
         //cout << "site: " << site << endl;
         pthread_mutex_unlock(&producer.mutex);
-        
 
         string html = getHTMLString(site);
         
         pthread_mutex_lock(&consumer.mutex);
         consumer.tmp.push_back(html);
-        pthread_cond_signal(&consumer.fill, &consumer.mutex);
+        pthread_cond_signal(&consumer.fill);
         //cout << "html " << consumer.tmp.back() << endl;
         pthread_mutex_unlock(&consumer.mutex);
     }
 }
 
-void* consumer(void * param)
+void* consume(void * param)
 {
-
-    Jobs *arg_struct = param;
+    Jobs *arg_struct = (Jobs*)param;
 
     for (int i = 0; i < arg_struct->tasks; i++)
     {
         pthread_mutex_lock(&consumer.mutex);
         while (consumer.tmp.size() == 0)
-            //do conditional wait thing
-        string HTML = consumer.tmp.back();
+            pthread_cond_wait(&consumer.fill, &consumer.mutex);
+        //do conditional wait thing
+
+        string html = consumer.tmp.back();
         consumer.tmp.pop_back();
-        pthread_cond_wait(&consumer.fill, &consumer.mutex);
+        //pthread_cond_wait(&consumer.fill, &consumer.mutex);
         // singal here?
+
+        string target = "or";
+        int count = getOccurences(html, target);
+        cout << count << endl;
         pthread_mutex_unlock(&consumer.mutex);
 
-        string target = "test";
-        int count = getOccurences(HTML, target);
-        cout << count << endl;
-        
-        
+        //string target = "or";
+        //int count = getOccurences(html, target);
+        //cout << count << endl;
         //pthread_mutex_lock(&consumer.mutex);
     }
 }
@@ -145,11 +151,7 @@ void createProducers(int param) {
     }
 
     int job = producer.orig.size();
-
-    struct Jobs {
-        int tasks;
-    };
-    
+ 
     Jobs jobs[consumer.threads];
 
     for (int i = 0; i < consumer.threads; i++) {
@@ -160,7 +162,7 @@ void createProducers(int param) {
         }
     }
 
-    for (int i = 0; i < consumer.threads; i ++)
+    for (int i = 0; i < consumer.threads; i++)
     {
         pthread_create(&conThreads[i], NULL, consume, &jobs[i]);
     }
