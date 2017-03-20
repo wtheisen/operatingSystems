@@ -84,19 +84,14 @@ vector<string> getFileItems(string fileName)
 }
 
 
-void* produce(void * param) {
-
+void* produce(void * param) 
+{
     while(producer.tmp.size() > 0) 
     {
         pthread_mutex_lock(&producer.mutex);
-        //while (producer.queue.size() == 0) 
-        //{
-         //   pthread_cond_wait(&empty, &producer.mutex);
-        //} 
         string site = producer.tmp.back();
         producer.tmp.pop_back();
-        cout << "site: " << site << endl;
- //       pthread_cond_signal(&fill);
+        //cout << "site: " << site << endl;
         pthread_mutex_unlock(&producer.mutex);
         
 
@@ -104,8 +99,34 @@ void* produce(void * param) {
         
         pthread_mutex_lock(&consumer.mutex);
         consumer.tmp.push_back(html);
-        cout << "html " << consumer.tmp.back() << endl;
+        pthread_cond_signal(&consumer.fill, &consumer.mutex);
+        //cout << "html " << consumer.tmp.back() << endl;
         pthread_mutex_unlock(&consumer.mutex);
+    }
+}
+
+void* consumer(void * param)
+{
+
+    Jobs *arg_struct = param;
+
+    for (int i = 0; i < arg_struct->tasks; i++)
+    {
+        pthread_mutex_lock(&consumer.mutex);
+        while (consumer.tmp.size() == 0)
+            //do conditional wait thing
+        string HTML = consumer.tmp.back();
+        consumer.tmp.pop_back();
+        pthread_cond_wait(&consumer.fill, &consumer.mutex);
+        // singal here?
+        pthread_mutex_unlock(&consumer.mutex);
+
+        string target = "test";
+        int count = getOccurences(HTML, target);
+        cout << count << endl;
+        
+        
+        //pthread_mutex_lock(&consumer.mutex);
     }
 }
 
@@ -115,17 +136,65 @@ void createProducers(int param) {
 
     cout << "okay..." << endl;
 
-    pthread_t threads[producer.threads];
+    pthread_t proThreads[producer.threads];
+    //pthread_t conThreads[consumer.threads];
+    pthread_t conThreads[consumer.threads];
     for (int i = 0; i < producer.threads; i++)
     {  
-        pthread_create(&threads[i], NULL, produce, NULL);
+        pthread_create(&proThreads[i], NULL, produce, NULL);
     }
 
+    int job = producer.orig.size();
+
+    struct Jobs {
+        int tasks;
+    };
+    
+    Jobs jobs[consumer.threads];
+
+    for (int i = 0; i < consumer.threads; i++) {
+        jobs[i].tasks = job / consumer.threads;
+        if (i == consumer.threads - 1)
+        {
+            jobs[i].tasks += job % consumer.threads;
+        }
+    }
+
+    for (int i = 0; i < consumer.threads; i ++)
+    {
+        pthread_create(&conThreads[i], NULL, consume, &jobs[i]);
+    }
+ 
     for (int i = 0; i < producer.threads; i++) 
     {
-        pthread_join(threads[i], NULL);
+        pthread_join(proThreads[i], NULL);
     }
-    alarm(1);
+ 
+    for (int i = 0; i < consumer.threads; i++)
+    {
+        pthread_join(conThreads[i], NULL);
+    }
+    
+    //int currThreads = 0;
+    //int totThreads = 0;
+    
+    /*while (totThreads < producer.orig.size())
+    {
+        pthread_create(&conThreads[totThreads], NULL, consume, NULL);
+        currThreads++; totThreads++;
+        if (currThreads == consumer.threads)
+        {
+            pthread_join(conThreads[totThreads - (consumer.threads - 1)], NULL);
+            currThreads--;
+        }
+    }
+    for (int i = 0; i < totThreads; i++)
+    {
+        pthread_join(conThreads[i], NULL);
+    }*/
+    
+    // hard coded value of 180
+    alarm(180);
 
 }
 
@@ -133,7 +202,7 @@ int main(int argc, char *argv[])
 {
     map<string, string> params;
     params["PERIOD_FETCH"] = "180";
-    params["NUM_FETCH"] = "1";
+    params["NUM_FETCH"] = "8";
     params["NUM_PARSE"] = "1";
     params["SEARCH_FILE"] = "Search.txt";
     params["SITE_FILE"] = "Sites.txt";

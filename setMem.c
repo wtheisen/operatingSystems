@@ -46,8 +46,8 @@ char* getHTML(char* url)
   curl_handle = curl_easy_init();
  
   /* specify URL to get */
-  char* url1 = "http://www.cnn.com";
-  curl_easy_setopt(curl_handle, CURLOPT_URL, url1);
+//  char* url1 = "http://www.cnn.com";
+  curl_easy_setopt(curl_handle, CURLOPT_URL, url);
  
   /* send all data to this function  */ 
   curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
@@ -69,7 +69,7 @@ char* getHTML(char* url)
                           curl_easy_strerror(res));
     }
   else {
-      printf("%s\n", chunk.memory);
+  //    printf("%s\n", chunk.memory);
         result = chunk.memory;
       /*
        *      * Now, our chunk.memory points to a memory block that is chunk.size
@@ -78,7 +78,7 @@ char* getHTML(char* url)
        *                     * Do something nice with it!
        *                          */ 
    
-      printf("%lu bytes retrieved\n", (long)chunk.size);
+  //    printf("%lu bytes retrieved\n", (long)chunk.size);
     }
  
   /* cleanup curl stuff */ 
