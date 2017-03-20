@@ -11,39 +11,43 @@
 #include <map>
 #include <sstream>
 #include <fstream>
-#include <iterator> 
+#include <iterator>
 
-extern "C" {
+extern "C"
+{
 #include "setMem.h"
 }
 
 using namespace std;
 
-struct Jobs {
+struct Jobs
+{
     int tasks;
 };
 
-struct MemoryStruct {
+struct MemoryStruct
+{
     char *memory;
     size_t size;
 };
 
-struct threadQueue {
-
+struct threadQueue
+{
     vector<string> tmp;
     vector<string> orig;
     int threads;
     pthread_mutex_t mutex;
     pthread_cond_t fill;
-    void repopulate() {
+    void repopulate()
+    {
         tmp = orig;
     }
 
 };
 
-threadQueue producer, consumer; 
+threadQueue producer, consumer;
 
-string getHTMLString(string url1) 
+string getHTMLString(string url1)
 {
     char * S = new char[url1.length() + 1];
     strcpy(S,url1.c_str());
@@ -51,11 +55,11 @@ string getHTMLString(string url1)
     return result;
 }
 
-int getOccurences(string site, string target) 
+int getOccurences(string site, string target)
 {
     int total = 0;
-    std::stringstream ss(site);
-    std::string line;
+    stringstream ss(site);
+    string line;
     int count = 0;
     while(std::getline(ss, line))
     {
@@ -65,7 +69,6 @@ int getOccurences(string site, string target)
             total++;
             nPos = line.find(target, nPos+1);
         }
-       // cout << "total: " << total << endl;
         count++;
     }
 
@@ -81,29 +84,24 @@ vector<string> getFileItems(string fileName)
     while (infile >> temp)
         searchTerms.push_back(temp);
 
-    //for (auto it = searchTerms.begin(); it != searchTerms.end(); ++it)
-    //       cout << *it << endl;
-
     return searchTerms;
 }
 
 
-void* produce(void * param) 
+void* produce(void * param)
 {
-    while(producer.tmp.size() > 0) 
+    while(producer.tmp.size() > 0)
     {
         pthread_mutex_lock(&producer.mutex);
         string site = producer.tmp.back();
         producer.tmp.pop_back();
-        //cout << "site: " << site << endl;
         pthread_mutex_unlock(&producer.mutex);
 
         string html = getHTMLString(site);
-        
+
         pthread_mutex_lock(&consumer.mutex);
         consumer.tmp.push_back(html);
         pthread_cond_signal(&consumer.fill);
-        //cout << "html " << consumer.tmp.back() << endl;
         pthread_mutex_unlock(&consumer.mutex);
     }
 }
@@ -140,22 +138,22 @@ void createProducers(int param) {
 
     producer.repopulate();
 
-    cout << "okay..." << endl;
-
     pthread_t proThreads[producer.threads];
-    //pthread_t conThreads[consumer.threads];
     pthread_t conThreads[consumer.threads];
+
     for (int i = 0; i < producer.threads; i++)
-    {  
+    {
         pthread_create(&proThreads[i], NULL, produce, NULL);
     }
 
     int job = producer.orig.size();
- 
+
     Jobs jobs[consumer.threads];
 
-    for (int i = 0; i < consumer.threads; i++) {
+    for (int i = 0; i < consumer.threads; i++)
+    {
         jobs[i].tasks = job / consumer.threads;
+
         if (i == consumer.threads - 1)
         {
             jobs[i].tasks += job % consumer.threads;
@@ -166,38 +164,19 @@ void createProducers(int param) {
     {
         pthread_create(&conThreads[i], NULL, consume, &jobs[i]);
     }
- 
-    for (int i = 0; i < producer.threads; i++) 
+
+    for (int i = 0; i < producer.threads; i++)
     {
         pthread_join(proThreads[i], NULL);
     }
- 
+
     for (int i = 0; i < consumer.threads; i++)
     {
         pthread_join(conThreads[i], NULL);
     }
-    
-    //int currThreads = 0;
-    //int totThreads = 0;
-    
-    /*while (totThreads < producer.orig.size())
-    {
-        pthread_create(&conThreads[totThreads], NULL, consume, NULL);
-        currThreads++; totThreads++;
-        if (currThreads == consumer.threads)
-        {
-            pthread_join(conThreads[totThreads - (consumer.threads - 1)], NULL);
-            currThreads--;
-        }
-    }
-    for (int i = 0; i < totThreads; i++)
-    {
-        pthread_join(conThreads[i], NULL);
-    }*/
-    
+
     // hard coded value of 180
     alarm(180);
-
 }
 
 int main(int argc, char *argv[])
@@ -239,11 +218,9 @@ int main(int argc, char *argv[])
     consumer.orig = getFileItems(params["SEARCH_FILE"]);
     consumer.threads = stoi(params["NUM_PARSE"]);
 
- //cout << site << endl;
-    //cout << getHTMLString("http://cnn.com/");
     signal(SIGALRM, createProducers);
     alarm(stoi(params["PERIOD_FETCH"]));
-    
+
     createProducers(1);
     while(1);
 }
