@@ -34,10 +34,13 @@ struct MemoryStruct
 struct threadQueue
 {
     vector<string> tmp;
+    //vector<string> orig;
     vector<string> orig;
+    vector<string> url;
     int threads;
     pthread_mutex_t mutex;
     pthread_cond_t fill;
+    int alarm;
     void repopulate()
     {
         tmp = orig;
@@ -45,7 +48,9 @@ struct threadQueue
 
 };
 
-threadQueue producer, consumer;
+threadQueue producer, consumer, writer;
+
+ofstream outfile;
 
 string getHTMLString(string url1)
 {
@@ -101,6 +106,7 @@ void* produce(void * param)
 
         pthread_mutex_lock(&consumer.mutex);
         consumer.tmp.push_back(html);
+        consumer.url.push_back(site);
         pthread_cond_signal(&consumer.fill);
         pthread_mutex_unlock(&consumer.mutex);
     }
@@ -115,17 +121,32 @@ void* consume(void * param)
         pthread_mutex_lock(&consumer.mutex);
         while (consumer.tmp.size() == 0)
             pthread_cond_wait(&consumer.fill, &consumer.mutex);
-        //do conditional wait thing
 
         string html = consumer.tmp.back();
+        string url = consumer.url.back();
         consumer.tmp.pop_back();
-        //pthread_cond_wait(&consumer.fill, &consumer.mutex);
-        // singal here?
-
-        string target = "or";
-        int count = getOccurences(html, target);
-        cout << count << endl;
+        consumer.url.pop_back();
         pthread_mutex_unlock(&consumer.mutex);
+
+        for (int i = 0; i < consumer.orig.size(); i++) 
+        { 
+            string target = consumer.orig[i];
+            int count = getOccurences(html, target);
+            time_t now = time(0);
+            string dt = ctime(&now);
+            dt.pop_back();
+            string line;
+            line = dt + ":" + target + "," + url + "," + to_string(count) + "\n";
+            
+            pthread_mutex_lock(&writer.mutex);
+            outfile.open("output.txt", std::ios_base::app);
+            outfile << line;
+            outfile.close();
+            pthread_mutex_unlock(&writer.mutex);
+
+        }
+        
+        
 
         //string target = "or";
         //int count = getOccurences(html, target);
@@ -134,8 +155,8 @@ void* consume(void * param)
     }
 }
 
-void createProducers(int param) {
-
+void createProducers(int param) 
+{
     producer.repopulate();
 
     pthread_t proThreads[producer.threads];
@@ -217,11 +238,13 @@ int main(int argc, char *argv[])
     producer.threads = stoi(params["NUM_FETCH"]);
     consumer.orig = getFileItems(params["SEARCH_FILE"]);
     consumer.threads = stoi(params["NUM_PARSE"]);
+    producer.alarm = stoi(params["PERIOD_FETCH"]);
 
     signal(SIGALRM, createProducers);
-    alarm(stoi(params["PERIOD_FETCH"]));
+    alarm(producer.alarm);
 
     createProducers(1);
+ 
     while(1);
 }
 
