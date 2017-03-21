@@ -34,7 +34,6 @@ struct MemoryStruct
 struct threadQueue
 {
     vector<string> tmp;
-    //vector<string> orig;
     vector<string> orig;
     vector<string> url;
     int threads;
@@ -145,13 +144,6 @@ void* consume(void * param)
             pthread_mutex_unlock(&writer.mutex);
 
         }
-        
-        
-
-        //string target = "or";
-        //int count = getOccurences(html, target);
-        //cout << count << endl;
-        //pthread_mutex_lock(&consumer.mutex);
     }
 }
 
@@ -195,7 +187,7 @@ void createProducers(int param)
     {
         pthread_join(conThreads[i], NULL);
     }
-
+    cout << "done" << endl;
     // hard coded value of 180
     alarm(180);
 }

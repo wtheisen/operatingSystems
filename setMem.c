@@ -34,7 +34,6 @@ char* getHTML(char* url)
 {
   CURL *curl_handle;
   CURLcode res;
-    printf("y %s", url); 
   struct MemoryStruct chunk;
  
   chunk.memory = malloc(1);  /* will be grown as needed by the realloc above */ 
