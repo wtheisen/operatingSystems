@@ -109,6 +109,7 @@ void* produce(void * param)
         pthread_cond_signal(&consumer.fill);
         pthread_mutex_unlock(&consumer.mutex);
     }
+    return 0;
 }
 
 void* consume(void * param)
@@ -127,7 +128,7 @@ void* consume(void * param)
         consumer.url.pop_back();
         pthread_mutex_unlock(&consumer.mutex);
 
-        for (int i = 0; i < consumer.orig.size(); i++) 
+        for (unsigned int i = 0; i < consumer.orig.size(); i++) 
         { 
             string target = consumer.orig[i];
             int count = getOccurences(html, target);
@@ -145,6 +146,7 @@ void* consume(void * param)
 
         }
     }
+    return 0;
 }
 
 void createProducers(int param) 
@@ -189,14 +191,16 @@ void createProducers(int param)
     }
     cout << "done" << endl;
     // hard coded value of 180
-    alarm(180);
+    
+    alarm(producer.alarm);
+    sleep(producer.alarm);
 }
 
 int main(int argc, char *argv[])
 {
     map<string, string> params;
-    params["PERIOD_FETCH"] = "180";
-    params["NUM_FETCH"] = "8";
+    params["PERIOD_FETCH"] = "10";
+    params["NUM_FETCH"] = "1";
     params["NUM_PARSE"] = "1";
     params["SEARCH_FILE"] = "Search.txt";
     params["SITE_FILE"] = "Sites.txt";
@@ -236,8 +240,8 @@ int main(int argc, char *argv[])
     alarm(producer.alarm);
 
     createProducers(1);
- 
-    while(1);
+    sleep(producer.alarm);
+    //while(1);
 }
 
 
