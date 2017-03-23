@@ -159,6 +159,11 @@ void* consume(void * param)
             if (count)
             {
                 outfile.open("output.txt", std::ios_base::app);
+                if (outfile.fail())
+                {
+                    cout << "Error with the output file: " << strerror(errno) << endl;
+                    exit(1);
+                }
                 outfile << line;
                 outfile.close();
             }
