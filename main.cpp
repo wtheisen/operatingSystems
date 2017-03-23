@@ -176,9 +176,16 @@ void createThreads(int param)
     pthread_t proThreads[producer.threads];
     pthread_t conThreads[consumer.threads];
 
+    int err;
+
     for (int i = 0; i < producer.threads; i++)
     {
-        pthread_create(&proThreads[i], NULL, produce, NULL);
+        err = pthread_create(&proThreads[i], NULL, produce, NULL);
+        if (err)
+        {
+            cout << "Error creating producer threads: " << strerror(errno) << endl;
+            exit(1);
+        }
     }
 
     int job = producer.orig.size();
@@ -197,17 +204,32 @@ void createThreads(int param)
 
     for (int i = 0; i < consumer.threads; i++)
     {
-        pthread_create(&conThreads[i], NULL, consume, &jobs[i]);
+        err = pthread_create(&conThreads[i], NULL, consume, &jobs[i]);
+        if (err)
+        {
+            cout << "Error creating consumer threads: " << strerror(errno) << endl;
+            exit(1);
+        }
     }
 
     for (int i = 0; i < producer.threads; i++)
     {
-        pthread_join(proThreads[i], NULL);
+        err = pthread_join(proThreads[i], NULL);
+        if (err)
+        {
+            cout << "Error joining producer threads: " << strerror(errno) << endl;
+            exit(1);
+        }
     }
 
     for (int i = 0; i < consumer.threads; i++)
     {
-        pthread_join(conThreads[i], NULL);
+        err = pthread_join(conThreads[i], NULL);
+        if (err)
+        {
+            cout << "Error joining consumer threads: " << strerror(errno) << endl;
+            exit(1);
+        }
     }
 
     alarm(producer.alarm);
