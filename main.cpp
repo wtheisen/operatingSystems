@@ -15,7 +15,7 @@
 
 extern "C"
 {
-#include "setMem.h"
+    #include "setMem.h"
 }
 
 using namespace std;
@@ -53,7 +53,7 @@ ofstream outfile;
 
 void my_handler(int sig)
 {
-    cout << "Caught signal " << sig << endl;
+    cout << endl << "Caught signal " << sig << endl;
     cout << "Output stored in output.txt" << endl;
     cout << "Exiting..." << endl;
     exit(0);
