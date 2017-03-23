@@ -64,7 +64,7 @@ int getOccurences(string site, string target)
     int total = 0;
     stringstream ss(site);
     string line;
-    int count = 0;
+    
     while(std::getline(ss, line))
     {
         size_t nPos = line.find(target, 0); // fist occurrence
@@ -73,9 +73,7 @@ int getOccurences(string site, string target)
             total++;
             nPos = line.find(target, nPos+1);
         }
-        count++;
     }
-
     return total;
 }
 
@@ -101,9 +99,10 @@ void* produce(void * param)
         producer.tmp.pop_back();
         pthread_mutex_unlock(&producer.mutex);
 
+        pthread_mutex_lock(&consumer.mutex);
         string html = getHTMLString(site);
 
-        pthread_mutex_lock(&consumer.mutex);
+//        pthread_mutex_lock(&consumer.mutex);
         consumer.tmp.push_back(html);
         consumer.url.push_back(site);
         pthread_cond_signal(&consumer.fill);
@@ -131,7 +130,9 @@ void* consume(void * param)
         for (unsigned int i = 0; i < consumer.orig.size(); i++) 
         { 
             string target = consumer.orig[i];
+            
             int count = getOccurences(html, target);
+            
             time_t now = time(0);
             string dt = ctime(&now);
             dt.pop_back();
@@ -139,9 +140,12 @@ void* consume(void * param)
             line = dt + ":" + target + "," + url + "," + to_string(count) + "\n";
             
             pthread_mutex_lock(&writer.mutex);
-            outfile.open("output.txt", std::ios_base::app);
-            outfile << line;
-            outfile.close();
+            if (count)
+            {
+                outfile.open("output.txt", std::ios_base::app);
+                outfile << line;
+                outfile.close();
+            }
             pthread_mutex_unlock(&writer.mutex);
 
         }
@@ -189,9 +193,7 @@ void createProducers(int param)
     {
         pthread_join(conThreads[i], NULL);
     }
-    cout << "done" << endl;
-    // hard coded value of 180
-    
+
     alarm(producer.alarm);
     sleep(producer.alarm);
 }
