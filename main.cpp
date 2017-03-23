@@ -51,6 +51,12 @@ threadQueue producer, consumer, writer;
 
 ofstream outfile;
 
+void my_handler(int sig)
+{
+    cout << "Caught signal " << sig << endl;
+    exit(0);
+}
+
 string getHTMLString(string url1)
 {
     char * S = new char[url1.length() + 1];
@@ -64,7 +70,7 @@ int getOccurences(string site, string target)
     int total = 0;
     stringstream ss(site);
     string line;
-    
+
     while(std::getline(ss, line))
     {
         size_t nPos = line.find(target, 0); // fist occurrence
@@ -102,7 +108,7 @@ void* produce(void * param)
         pthread_mutex_lock(&consumer.mutex);
         string html = getHTMLString(site);
 
-//        pthread_mutex_lock(&consumer.mutex);
+        //        pthread_mutex_lock(&consumer.mutex);
         consumer.tmp.push_back(html);
         consumer.url.push_back(site);
         pthread_cond_signal(&consumer.fill);
@@ -130,15 +136,15 @@ void* consume(void * param)
         for (unsigned int i = 0; i < consumer.orig.size(); i++) 
         { 
             string target = consumer.orig[i];
-            
+
             int count = getOccurences(html, target);
-            
+
             time_t now = time(0);
             string dt = ctime(&now);
             dt.pop_back();
             string line;
             line = dt + ":" + target + "," + url + "," + to_string(count) + "\n";
-            
+
             pthread_mutex_lock(&writer.mutex);
             if (count)
             {
@@ -238,6 +244,19 @@ int main(int argc, char *argv[])
     consumer.threads = stoi(params["NUM_PARSE"]);
     producer.alarm = stoi(params["PERIOD_FETCH"]);
 
+
+    struct sigaction sigIntHandler, handler1;
+
+    sigIntHandler.sa_handler = my_handler;
+    sigemptyset(&sigIntHandler.sa_mask);
+    sigIntHandler.sa_flags = 0;
+
+    handler1.sa_handler = my_handler;
+    sigemptyset(&handler1.sa_mask);
+    handler1.sa_flags = 0;
+    
+    sigaction(SIGINT, &sigIntHandler, NULL);
+    sigaction(SIGHUP, &handler1, NULL);
     signal(SIGALRM, createProducers);
     alarm(producer.alarm);
 
