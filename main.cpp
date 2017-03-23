@@ -137,11 +137,12 @@ void* consume(void * param)
         { 
             string target = consumer.orig[i];
 
-            int count = getOccurences(html, target);
+            long long count = getOccurences(html, target);
 
             time_t now = time(0);
             string dt = ctime(&now);
-            dt.pop_back();
+            //dt.pop_back();
+            dt.erase(dt.size()-1);
             string line;
             line = dt + ":" + target + "," + url + "," + to_string(count) + "\n";
 
