@@ -341,7 +341,6 @@ int main(int argc, char *argv[])
 
     createThreads(1);
     sleep(producer.alarm);
-    //while(1);
 }
 
 
