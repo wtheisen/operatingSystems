@@ -220,7 +220,8 @@ int main(int argc, char *argv[])
     {
         string fileName = (string)argv[1];
 
-        if (ifstream infile(fileName))
+        ifstream infile(fileName);
+        if (infile.fail())
             cout << "Error with params file: " << strerror(errno) << endl;
         string temp;
         while (infile >> temp)
