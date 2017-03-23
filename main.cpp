@@ -86,11 +86,18 @@ int getOccurences(string site, string target)
 vector<string> getFileItems(string fileName)
 {
     ifstream infile(fileName);
+    if(infile.fail())
+    {
+        cout << "Error with " << fileName << ": " << strerror(errno) << endl;
+        exit(1);
+    }
     vector<string> searchTerms;
 
     string temp;
     while (infile >> temp)
         searchTerms.push_back(temp);
+
+    infile.close();
 
     return searchTerms;
 }
@@ -160,7 +167,7 @@ void* consume(void * param)
     return 0;
 }
 
-void createProducers(int param)
+void createThreads(int param)
 {
     producer.repopulate();
 
@@ -222,7 +229,10 @@ int main(int argc, char *argv[])
 
         ifstream infile(fileName);
         if (infile.fail())
+        {
             cout << "Error with params file: " << strerror(errno) << endl;
+            exit(1);
+        }
         string temp;
         while (infile >> temp)
         {
@@ -248,7 +258,6 @@ int main(int argc, char *argv[])
     consumer.threads = stoi(params["NUM_PARSE"]);
     producer.alarm = stoi(params["PERIOD_FETCH"]);
 
-
     struct sigaction sigIntHandler, handler1;
 
     sigIntHandler.sa_handler = my_handler;
@@ -261,10 +270,10 @@ int main(int argc, char *argv[])
 
     sigaction(SIGINT, &sigIntHandler, NULL);
     sigaction(SIGHUP, &handler1, NULL);
-    signal(SIGALRM, createProducers);
+    signal(SIGALRM, createThreads);
     alarm(producer.alarm);
 
-    createProducers(1);
+    createThreads(1);
     sleep(producer.alarm);
     //while(1);
 }
