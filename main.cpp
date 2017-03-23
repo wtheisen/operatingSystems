@@ -241,6 +241,9 @@ map<string, string> paramCheck(map<string, string> params)
     else
         okayParams["NUM_PARSE"] = params["NUM_PARSE"];
 
+    okayParams["SEARCH_FILE"] = params["SEARCH_FILE"];
+    okayParams["SITE_FILE"] = params["SITE_FILE"];
+
     return okayParams;
 }
 
