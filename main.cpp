@@ -217,6 +217,8 @@ void createThreads(int param)
         }
     }
 
+    cout << "Outputting..." << endl;
+
     for (int i = 0; i < producer.threads; i++)
     {
         err = pthread_join(proThreads[i], NULL);
