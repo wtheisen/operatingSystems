@@ -133,8 +133,8 @@ void* consume(void * param)
         consumer.url.pop_back();
         pthread_mutex_unlock(&consumer.mutex);
 
-        for (unsigned int i = 0; i < consumer.orig.size(); i++) 
-        { 
+        for (unsigned int i = 0; i < consumer.orig.size(); i++)
+        {
             string target = consumer.orig[i];
 
             long long count = getOccurences(html, target);
@@ -160,7 +160,7 @@ void* consume(void * param)
     return 0;
 }
 
-void createProducers(int param) 
+void createProducers(int param)
 {
     producer.repopulate();
 
@@ -220,7 +220,8 @@ int main(int argc, char *argv[])
     {
         string fileName = (string)argv[1];
 
-        ifstream infile(fileName);
+        if (ifstream infile(fileName))
+            cout << "Error with params file: " << strerror(errno) << endl;
         string temp;
         while (infile >> temp)
         {
@@ -237,6 +238,7 @@ int main(int argc, char *argv[])
                 cout << " with value: " << temp << endl;
             }
         }
+        infile.close();
     }
 
     producer.orig = getFileItems(params["SITE_FILE"]);
@@ -255,7 +257,7 @@ int main(int argc, char *argv[])
     handler1.sa_handler = my_handler;
     sigemptyset(&handler1.sa_mask);
     handler1.sa_flags = 0;
-    
+
     sigaction(SIGINT, &sigIntHandler, NULL);
     sigaction(SIGHUP, &handler1, NULL);
     signal(SIGALRM, createProducers);
