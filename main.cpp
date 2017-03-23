@@ -53,7 +53,7 @@ ofstream outfile;
 
 void my_handler(int sig)
 {
-    cout << endl << "Caught signal " << sig << endl;
+    cout << endl << "Caught signal " << strsignal(sig) << endl;
     cout << "Output stored in output.txt" << endl;
     cout << "Exiting..." << endl;
     exit(0);
