@@ -214,6 +214,36 @@ void createThreads(int param)
     sleep(producer.alarm);
 }
 
+map<string, string> paramCheck(map<string, string> params)
+{
+    map<string, string> okayParams;
+    if (stoi(params["PERIOD_FETCH"]) < 5)
+    {
+        cout << "PERIOD_FETCH too low, has been set to a default of 5s" << endl;
+        okayParams["PERIOD_FETCH"] = "5";
+    }
+    else
+        okayParams["PERIOD_FETCH"] = params["PERIOD_FETCH"];
+
+    if (stoi(params["NUM_FETCH"]) < 1 || stoi(params["NUM_FETCH"]) > 100)
+    {
+        cout << "NUM_FETCH invalid, has been set to a default of 3" << endl;
+        okayParams["NUM_FETCH"] = "3";
+    }
+    else
+        okayParams["NUM_FETCH"] = params["NUM_FETCH"];
+
+    if (stoi(params["NUM_PARSE"]) < 1 || stoi(params["NUM_PARSE"]) > 100)
+    {
+        cout << "NUM_PARSE invalid, has been set to a default of 3" << endl;
+        okayParams["NUM_PARSE"] = "3";
+    }
+    else
+        okayParams["NUM_PARSE"] = params["NUM_PARSE"];
+
+    return okayParams;
+}
+
 int main(int argc, char *argv[])
 {
     map<string, string> params;
@@ -253,6 +283,8 @@ int main(int argc, char *argv[])
         }
         infile.close();
     }
+
+    params = paramCheck(params);
 
     producer.orig = getFileItems(params["SITE_FILE"]);
     producer.threads = stoi(params["NUM_FETCH"]);
