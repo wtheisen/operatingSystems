@@ -32,3 +32,7 @@ point it will exit. It exits almost immediately meaning that some data might
 be lost. The output dumping works as follows: after the consume threads have
 parsed their specific HTML-string, they lock and append the output to a file
 named for the particular fetch period.
+
+Included in the testFiles directory is a Sites.txt and a Searches.txt that
+provide some default websites and terms you can use should you so wish.
+They will need to be moved into the same directory as the main program for use.
