@@ -3,8 +3,8 @@ CXXFLAGS = -g -Wall -std=gnu++11 -lcurl
 
 all: main
 
-main: main1 
-	/usr/bin/g++ -o main setMem.o main.o -lcurl -Wall
+main: main1
+	/usr/bin/g++ -o site-tester setMem.o main.o -lcurl -Wall
 
 main1:
 	/usr/bin/gcc -c -o setMem.o setMem.c -lcurl -Wall
@@ -13,4 +13,4 @@ main1:
 #code.c:
 #	gcc -c -o setMem.o setMem.c
 clean:
-	rm -f main
+	rm -f site-tester *.o

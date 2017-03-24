@@ -51,8 +51,8 @@ struct threadQueue //All of our threads share this generic structure for their d
 };
 
 threadQueue producer, consumer, writer; //the three types of threads we use in our code
+int fetchNumber = 1;
 
-ofstream outfile; //the output file we dump to
 
 void my_handler(int sig) //the handler to catch the interrupt signal
 {
@@ -160,7 +160,8 @@ void* consume(void * param) //the consume portion of the code, takes an HTMLstri
             pthread_mutex_lock(&writer.mutex); //lock so we don't try and write to the output file at the same time
             if (count)
             {
-                outfile.open("output.txt", std::ios_base::app);
+                ofstream outfile; //the output file we dump to
+                outfile.open(to_string(static_cast<long long>(fetchNumber)) + ".csv", std::ios_base::app);
                 if (outfile.fail())
                 {
                     cout << "Error with the output file: " << strerror(errno) << endl;
@@ -219,8 +220,6 @@ void createThreads(int param)
         }
     }
 
-    cout << "Outputting..." << endl; //just a nice message to let the user know the code is running
-
     for (int i = 0; i < producer.threads; i++)
     {
         err = pthread_join(proThreads[i], NULL);
@@ -241,6 +240,8 @@ void createThreads(int param)
         }
     }
 
+    cout << "output written..." << endl; //message to let the use know the program is still running
+    fetchNumber++;
     alarm(producer.alarm); //set the alarm for the next cycle
     sleep(producer.alarm); //after work is done go to sleep until the next cycle
                            //sleeping makes the idle between rounds more efficient
